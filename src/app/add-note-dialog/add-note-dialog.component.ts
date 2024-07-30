@@ -1,8 +1,8 @@
 import { Component, Output, EventEmitter } from '@angular/core';
+import { Note } from '../interfaces/note.interface';
 import { NoteListService } from '../firebase-services/note-list.service'
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Note } from '../interfaces/note.interface';
 
 @Component({
   selector: 'app-add-note-dialog',
@@ -13,7 +13,6 @@ import { Note } from '../interfaces/note.interface';
 })
 export class AddNoteDialogComponent {
   @Output() addDialogClosed: EventEmitter<boolean> = new EventEmitter();
-  id = "";
   title = "";
   content = "";
 
@@ -21,17 +20,18 @@ export class AddNoteDialogComponent {
 
   closeDialog() {
     this.title = "";
+    this.content = "";
     this.addDialogClosed.emit(false);
   }
 
-  addNote() {    
-    let note: Note = {      
+  addNote() {
+    let note: Note = {
       type: "note",
       title: this.title,
       content: this.content,
       marked: false,
     }
-    this.noteService.addNote(note);
+    this.noteService.addNote(note, "notes");
     this.closeDialog();
   }
 }

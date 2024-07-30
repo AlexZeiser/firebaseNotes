@@ -1,6 +1,7 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Note } from '../interfaces/note.interface';
-import { query, orderBy, limit, where, collection, Firestore, doc, onSnapshot, addDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
+import { Firestore, collectionData, collection, doc, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, limit, where, query } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -11,55 +12,87 @@ export class NoteListService {
   normalNotes: Note[] = [];
   normalMarkedNotes: Note[] = [];
 
+  unsubTrash;
   unsubNotes;
   unsubMarkedNotes;
-  unsubTrash;
 
   firestore: Firestore = inject(Firestore);
 
   constructor() {
     this.unsubNotes = this.subNotesList();
+    this.unsubMarkedNotes = this.subMarkedNotesList();
     this.unsubTrash = this.subTrashList();
-    this.unsubMarkedNotes = this.subMarkedNotesList;
   }
 
-  /* Start  Datan löschen / deleteDoc */
-  async deleteNote(colId: "notes" | "trash", docId: string) {
-    await deleteDoc(this.getSingleDocRef(colId, docId)).catch(
+  /* Start  Daten hinzufügen / addDoc */
+  /* async addNote(note: Note) {
+    await addDoc(this.getNotesRef(), note).catch(
       (err) => {
         console.log(err);
+        console.log("addNote");
       }
+    ).then(
+      (docRef) => { console.log("Document written with ID: ", docRef?.id); }
     )
+  } */
+
+  async addNote(item: Note, colId: "notes" | "trash") {
+    if (colId === "notes") {
+      await addDoc(this.getNotesRef(), item).catch(
+        (err) => { console.error(err) }
+      ).then(
+        (docRef) => console.log("Document written with ID: ", docRef?.id)
+      );
+    } else if (colId === "trash") {
+      await addDoc(this.getTrashRef(), item).catch(
+        (err) => { console.error(err) }
+      ).then(
+        (docRef) => console.log("Document written with ID: ", docRef?.id)
+      );
+    }
   }
   /* Ende */
 
-  /* Start  Datan aktualisieren / updateDoc */
-  async updateNote(note: Note) {
+  /* Start  Daten aktualisieren / updateDoc */
+  /* async updateNote(note: Note) {
 
     if (note.id) {
       let docRef = this.getSingleDocRef(this.getColIdFromNote(note), note.id);
       await updateDoc(docRef, this.getCleanJson(note)).catch(
         (err) => {
           console.log(err);
+          console.log("updateNote");
         }
       );
     }
-
-
-  }
+  } */
   /* Ende */
 
-  /* Start  Datan hinzufügen / addDoc */
-  async addNote(note: Note) {
-    await addDoc(this.getNotesRef(), note).catch(
+  async updateNote(note: Note) {
+    if (note.id) {
+      let docRef = this.getSingleDocRef(this.getColIdFromNote(note), note.id);
+      await updateDoc(docRef, this.getCleanJson(note)).catch(
+        (err) => { console.error(err) }
+      );
+    }
+  }
+
+
+  /* Start  Daten löschen / deleteDoc */
+  /* async deleteNote(colId: "notes" | "trash", docId: string) {
+    await deleteDoc(this.getSingleDocRef(colId, docId)).catch(
       (err) => {
         console.log(err);
+        console.log("deleteNote");        
       }
-    ).then(
-      (docRef) => { console.log("Document written with ID: ", docRef?.id); }
     )
-  }
+  } */
   /* Ende */
+  async deleteNote(colId: "notes" | "trash", docId: string) {
+    await deleteDoc(this.getSingleDocRef(colId, docId)).catch(
+      (err) => { console.error(err) }
+    );
+  }
 
   getCleanJson(note: Note): {} {
     return {
@@ -71,19 +104,21 @@ export class NoteListService {
   }
 
   getColIdFromNote(note: Note) {
-    if (note.type == 'note') {
+    if (note.type === 'note') {
       return 'notes'
     } else {
-      return 'trash'
+      return 'trash' 
     }
   }
 
-  ngonDestroy() {
-    this.unsubNotes();
-    this.unsubTrash();
-    this.unsubMarkedNotes();
+  subTrashList() {
+    return onSnapshot(this.getTrashRef(), (list) => {
+      this.trashNotes = [];
+      list.forEach(element => {
+        this.trashNotes.push(this.setNoteObject(element.data(), element.id));
+      })
+    });
   }
-
 
   subNotesList() {
     const q = query(this.getNotesRef(), limit(100));
@@ -96,7 +131,7 @@ export class NoteListService {
   }
 
   subMarkedNotesList() {
-    const q = query(this.getNotesRef(), where("marked", "==", true));
+    const q = query(this.getNotesRef(), where("marked", "==", true), limit(100));
     return onSnapshot(q, (list) => {
       this.normalMarkedNotes = [];
       list.forEach(element => {
@@ -105,13 +140,10 @@ export class NoteListService {
     });
   }
 
-  subTrashList() {
-    return onSnapshot(this.getTrashRef(), (list) => {
-      this.trashNotes = [];
-      list.forEach(element => {
-        this.trashNotes.push(this.setNoteObject(element.data(), element.id));
-      })
-    });
+  ngOnDestroy() {
+    this.unsubTrash(); 
+    this.unsubNotes();
+    this.unsubMarkedNotes();
   }
 
   getNotesRef() {

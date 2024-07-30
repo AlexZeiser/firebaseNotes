@@ -5,7 +5,11 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { NoteComponent } from './note/note.component';
 
-
+/* 
+  noteList: Note[] = [];
+  favFilter: "all" | "fav" = "all";
+  status: "notes" | "trash" = "notes";
+*/
 
 @Component({
   selector: 'app-note-list',
@@ -16,14 +20,19 @@ import { NoteComponent } from './note/note.component';
 })
 export class NoteListComponent {
   noteList: Note[] = [];
+  favFilter: "all" | "fav" = "all";
+  status: "notes" | "trash" = "notes";
+
+
+  /* noteList: Note[] = [];
   trashList: Note[] = [];
 
   favFilter: "all" | "fav" = "all";
   status: "notes" | "trash" = "notes";
-
+ */
   constructor(private noteService: NoteListService) {
 
-  }
+  } 
 
   getList(): Note[] {
     if (this.status == 'notes') {
@@ -35,20 +44,22 @@ export class NoteListComponent {
     } else {
       return this.noteService.trashNotes;
     }
-
   }
 
   changeFavFilter(filter: "all" | "fav") {
+    console.log("status allfav");
     this.favFilter = filter;
   }
 
   changeTrashStatus() {
     if (this.status == "trash") {
       this.status = "notes";
+      console.log("status notes");
+      
     } else {
       this.status = "trash";
       this.favFilter = "all";
+      console.log("status trash");
     }
   }
-
 }
