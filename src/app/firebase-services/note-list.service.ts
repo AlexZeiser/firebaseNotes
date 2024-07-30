@@ -22,19 +22,7 @@ export class NoteListService {
     this.unsubNotes = this.subNotesList();
     this.unsubMarkedNotes = this.subMarkedNotesList();
     this.unsubTrash = this.subTrashList();
-  }
-
-  /* Start  Daten hinzufügen / addDoc */
-  /* async addNote(note: Note) {
-    await addDoc(this.getNotesRef(), note).catch(
-      (err) => {
-        console.log(err);
-        console.log("addNote");
-      }
-    ).then(
-      (docRef) => { console.log("Document written with ID: ", docRef?.id); }
-    )
-  } */
+  } 
 
   async addNote(item: Note, colId: "notes" | "trash") {
     if (colId === "notes") {
@@ -51,22 +39,6 @@ export class NoteListService {
       );
     }
   }
-  /* Ende */
-
-  /* Start  Daten aktualisieren / updateDoc */
-  /* async updateNote(note: Note) {
-
-    if (note.id) {
-      let docRef = this.getSingleDocRef(this.getColIdFromNote(note), note.id);
-      await updateDoc(docRef, this.getCleanJson(note)).catch(
-        (err) => {
-          console.log(err);
-          console.log("updateNote");
-        }
-      );
-    }
-  } */
-  /* Ende */
 
   async updateNote(note: Note) {
     if (note.id) {
@@ -76,18 +48,7 @@ export class NoteListService {
       );
     }
   }
-
-
-  /* Start  Daten löschen / deleteDoc */
-  /* async deleteNote(colId: "notes" | "trash", docId: string) {
-    await deleteDoc(this.getSingleDocRef(colId, docId)).catch(
-      (err) => {
-        console.log(err);
-        console.log("deleteNote");        
-      }
-    )
-  } */
-  /* Ende */
+  
   async deleteNote(colId: "notes" | "trash", docId: string) {
     await deleteDoc(this.getSingleDocRef(colId, docId)).catch(
       (err) => { console.error(err) }
